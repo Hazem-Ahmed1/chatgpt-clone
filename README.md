@@ -12,12 +12,25 @@
 
 ## Screenshots
 
-> Add screenshots of your running app here. Place them in the `screenshots/` folder and update the paths below.
 
-| Chat Interface | Model Comparison |
-|---|---|
-| ![Chat](screenshots/Chat.png) | ![Chat](screenshots/Chat%20with%20image%20description%20.png.png) |  ![Models comparison ](screenshots/Models.png) |
+### 💬 Chat Interface
+![Chat Interface](screenshots/Chat.png)
 
+Main chat UI with streaming responses, message controls, and clean layout.
+
+---
+
+### 🖼️ Chat with Image Description
+![Chat with Image](screenshots/Chat%20with%20image%20description%20.png.png)
+
+Example of using image input and receiving AI-generated descriptions.
+
+---
+
+### ⚙️ Model Comparison Page
+![Model Comparison](screenshots/Models.png)
+
+Side-by-side comparison of available AI models and their capabilities.
 ---
 
 ## ✨ Features
