@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Environment — NEVER commit real keys
+.env
+
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
+# Personal notes (LinkedIn / CV text — keep private)
+PERSONAL_NOTES.txt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+*.log

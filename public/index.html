@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChatGPT Clone</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Bootstrap 5.3 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Font Awesome 6 Free -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Mobile sidebar backdrop -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- ═══════════════════════════════════════ SIDEBAR ═══════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Header -->
+    <div class="sidebar-header">
+      <button class="btn btn-new-chat" id="newChatBtn">
+        <i class="fa-solid fa-pen-to-square"></i>
+        <span>New Chat</span>
+      </button>
+      <button class="btn btn-icon" id="sidebarToggle" title="Close sidebar">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+    </div>
+
+    <!-- Model selector -->
+    <div class="px-2 pb-2">
+      <p class="sidebar-label mb-1">Model</p>
+      <div class="dropdown">
+        <button class="btn btn-model-select w-100 dropdown-toggle" id="modelDropdownBtn"
+                data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+          <span class="model-select-icon" id="modelSelectIcon"><i class="fa-solid fa-robot"></i></span>
+          <span class="model-select-name" id="modelSelectName">Loading…</span>
+        </button>
+        <ul class="dropdown-menu model-dropdown-menu" id="modelDropdownMenu">
+          <!-- Built dynamically by app.js -->
+        </ul>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- History -->
+    <div class="sidebar-history flex-grow-1 overflow-auto px-2">
+      <p class="sidebar-label">Recent</p>
+      <div id="historyList"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="sidebar-footer">
+      <a href="/models.html" target="_blank" class="btn btn-sidebar-footer-link text-decoration-none">
+        <i class="fa-solid fa-table-columns fa-fw"></i>
+        <span>Model Comparison</span>
+        <i class="fa-solid fa-arrow-up-right-from-square ms-auto small opacity-50"></i>
+      </a>
+      <button class="btn btn-sidebar-footer-link" id="fineTuningBtn">
+        <i class="fa-solid fa-sliders fa-fw"></i>
+        <span>Fine-tuning Info</span>
+        <i class="fa-solid fa-arrow-up-right-from-square ms-auto small opacity-50"></i>
+      </button>
+      <div class="d-flex align-items-center gap-2 px-2 pb-1">
+        <i class="fa-solid fa-microchip fa-fw small opacity-50"></i>
+        <small class="text-truncate opacity-75" id="footerModelLabel">—</small>
+        <button class="btn btn-icon btn-sm ms-auto" id="themeToggle" title="Toggle light / dark">
+          <i class="fa-solid fa-moon" id="themeIcon"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════ MAIN ════════════════════════════ -->
+  <main class="main-area">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <button class="btn btn-icon" id="sidebarOpenBtn" title="Open sidebar">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <span class="topbar-title text-truncate" id="topbarTitle">ChatGPT Clone</span>
+      <button class="btn btn-icon ms-auto" id="clearChatBtn" title="Clear current chat">
+        <i class="fa-solid fa-trash-can"></i>
+      </button>
+    </header>
+
+    <!-- Messages area -->
+    <div class="messages-outer" id="messagesContainer">
+
+      <!-- Welcome screen -->
+      <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-icon-wrap">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <h2 class="welcome-heading">How can I help you today?</h2>
+        <p class="welcome-sub">Model: <strong id="welcomeModelName">—</strong></p>
+
+        <!-- Capability badges shown for selected model -->
+        <div class="d-flex flex-wrap justify-content-center gap-2 mb-4" id="capabilityBadges"></div>
+
+        <!-- Starter prompts -->
+        <div class="starter-grid">
+          <button class="starter-card" data-prompt="Explain quantum computing in simple terms.">
+            <i class="fa-solid fa-atom"></i><span>Explain quantum computing</span>
+          </button>
+          <button class="starter-card" data-prompt="Write a short poem about the ocean.">
+            <i class="fa-solid fa-feather-pointed"></i><span>Write a poem</span>
+          </button>
+          <button class="starter-card" data-prompt="Give me 5 healthy breakfast ideas.">
+            <i class="fa-solid fa-bowl-food"></i><span>Healthy breakfast ideas</span>
+          </button>
+          <button class="starter-card" data-prompt="What are the best practices for clean code?">
+            <i class="fa-solid fa-code"></i><span>Clean code tips</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat messages rendered here -->
+      <div class="messages-list" id="messagesList"></div>
+    </div>
+
+    <!-- Attachment preview bar -->
+    <div class="attachment-bar d-none" id="attachmentBar">
+      <div class="attachment-bar-inner" id="attachmentBarItems"></div>
+      <button class="btn btn-sm btn-clear-attach" id="clearAttachBtn" title="Clear attachments">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Input area -->
+    <div class="input-area">
+      <!-- Image-gen mode indicator -->
+      <div class="image-gen-notice d-none" id="imageGenNotice">
+        <i class="fa-solid fa-wand-magic-sparkles text-warning me-2"></i>
+        Image generation mode — describe the image you want to create
+      </div>
+
+      <div class="input-box">
+        <!-- Attachment / tool buttons -->
+        <div class="input-tools">
+          <button class="btn btn-tool" id="attachImageBtn" title="Attach image (Vision models)">
+            <i class="fa-solid fa-image"></i>
+          </button>
+          <input type="file" id="imageFileInput" accept="image/png,image/jpeg,image/gif,image/webp" class="d-none" />
+
+          <button class="btn btn-tool" id="attachFileBtn" title="Attach text file">
+            <i class="fa-solid fa-paperclip"></i>
+          </button>
+          <input type="file" id="textFileInput"
+            accept=".txt,.md,.py,.js,.ts,.jsx,.tsx,.html,.css,.json,.csv,.xml,.yaml,.yml,.sh,.c,.cpp,.java,.go,.rs,.php,.rb,.swift"
+            class="d-none" />
+        </div>
+
+        <!-- Textarea row -->
+        <div class="input-row">
+          <textarea id="userInput" class="input-textarea" placeholder="Message…"
+                    rows="1" maxlength="8000"></textarea>
+          <button class="btn btn-mic" id="micBtn" title="Voice input (click to start/stop)">
+            <i class="fa-solid fa-microphone" id="micIcon"></i>
+          </button>
+          <button class="btn btn-send" id="sendBtn" title="Send (Enter)" disabled>
+            <i class="fa-solid fa-arrow-up"></i>
+          </button>
+        </div>
+      </div>
+      <p class="input-disclaimer">AI can make mistakes. Verify important information.</p>
+    </div>
+  </main>
+
+  <!-- ═══════════════════════════════ MODALS ════════════════════════════════ -->
+
+  <!-- Delete conversation -->
+  <div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content border-0">
+        <div class="modal-header border-0 pb-0">
+          <h6 class="modal-title fw-semibold">Delete conversation?</h6>
+        </div>
+        <div class="modal-body pt-1">
+          <p class="text-muted small mb-0">This will permanently remove it from your history.</p>
+        </div>
+        <div class="modal-footer border-0 pt-0 gap-2">
+          <button class="btn btn-sm btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-sm btn-danger px-3" id="confirmDeleteBtn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fine-tuning info -->
+  <div class="modal fade" id="fineTuningModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content border-0">
+        <div class="modal-header border-0">
+          <h5 class="modal-title"><i class="fa-solid fa-sliders me-2 text-warning"></i>Fine-tuning Guide</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-4">
+            Fine-tuning trains a base model on your own labeled dataset so it learns a specific style,
+            domain, or behavior — without changing the base model weights for other users.
+            You need to upload a JSONL file of prompt/completion pairs to the provider's platform.
+          </p>
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <div class="card h-100 border">
+                <div class="card-body">
+                  <h6 class="fw-semibold mb-1"><i class="fa-solid fa-bolt text-warning me-2"></i>OpenAI</h6>
+                  <p class="small text-muted mb-3">Fine-tune GPT-4o-mini and GPT-3.5-turbo with JSONL datasets via the API or dashboard.</p>
+                  <a href="https://platform.openai.com/docs/guides/fine-tuning" target="_blank"
+                     class="btn btn-sm btn-outline-secondary">
+                    Docs <i class="fa-solid fa-arrow-up-right-from-square ms-1 small"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="card h-100 border">
+                <div class="card-body">
+                  <h6 class="fw-semibold mb-1"><i class="fa-brands fa-google text-primary me-2"></i>Google Gemini</h6>
+                  <p class="small text-muted mb-3">Supervised fine-tuning of Gemini 1.5 Flash via Google AI Studio with example pairs.</p>
+                  <a href="https://ai.google.dev/gemini-api/docs/model-tuning" target="_blank"
+                     class="btn btn-sm btn-outline-secondary">
+                    Docs <i class="fa-solid fa-arrow-up-right-from-square ms-1 small"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="card h-100 border">
+                <div class="card-body">
+                  <h6 class="fw-semibold mb-1"><i class="fa-solid fa-a text-warning me-2"></i>Anthropic Claude</h6>
+                  <p class="small text-muted mb-3">Fine-tuning available for enterprise customers. Contact Anthropic for access.</p>
+                  <a href="https://docs.anthropic.com/en/docs/build-with-claude/fine-tuning" target="_blank"
+                     class="btn btn-sm btn-outline-secondary">
+                    Docs <i class="fa-solid fa-arrow-up-right-from-square ms-1 small"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="card h-100 border">
+                <div class="card-body">
+                  <h6 class="fw-semibold mb-1"><i class="fa-solid fa-fire text-danger me-2"></i>Meta Llama</h6>
+                  <p class="small text-muted mb-3">Fine-tune Llama models locally with Unsloth, LoRA, or QLoRA on a single GPU.</p>
+                  <a href="https://llama.meta.com/docs/how-to-guides/fine-tuning/" target="_blank"
+                     class="btn btn-sm btn-outline-secondary">
+                    Docs <i class="fa-solid fa-arrow-up-right-from-square ms-1 small"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5.3 JS bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Puter.js — free unlimited image generation, no API key needed -->
+  <script src="https://js.puter.com/v2/"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Model Comparison — ChatGPT Clone</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Tokens ── */
+    :root {
+      --accent: #10a37f;
+      --accent-hover: #0e8f6f;
+      --radius: 14px;
+      --trans: .18s ease;
+    }
+    [data-bs-theme="dark"] {
+      --card-bg: #1e1e1e;
+      --card-border: rgba(255,255,255,.08);
+      --header-bg: #161616;
+      --tag-free-bg: #14532d; --tag-free-c: #86efac;
+      --tag-fast-bg: #1e3a5f; --tag-fast-c: #93c5fd;
+      --tag-smart-bg:#312e81;  --tag-smart-c:#c4b5fd;
+      --tag-vision-bg:#065f46; --tag-vision-c:#6ee7b7;
+      --tag-reason-bg:#7c2d12; --tag-reason-c:#fed7aa;
+      --tag-cheap-bg:#422006; --tag-cheap-c:#fde68a;
+      --tag-img-bg:  #1f2937; --tag-img-c:  #67e8f9;
+    }
+    [data-bs-theme="light"] {
+      --card-bg: #ffffff;
+      --card-border: #e5e7eb;
+      --header-bg: #f9fafb;
+      --tag-free-bg: #dcfce7; --tag-free-c: #166534;
+      --tag-fast-bg: #dbeafe; --tag-fast-c: #1e40af;
+      --tag-smart-bg:#ede9fe;  --tag-smart-c:#5b21b6;
+      --tag-vision-bg:#d1fae5; --tag-vision-c:#065f46;
+      --tag-reason-bg:#ffedd5; --tag-reason-c:#9a3412;
+      --tag-cheap-bg:#fef9c3; --tag-cheap-c:#854d0e;
+      --tag-img-bg:  #e0f2fe; --tag-img-c:  #0369a1;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--card-border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .page-header h1 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 0;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .85rem;
+      font-weight: 500;
+      color: var(--bs-body-color);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      transition: background var(--trans);
+    }
+    .back-btn:hover { background: rgba(128,128,128,.1); color: var(--bs-body-color); }
+
+    /* ── Layout ── */
+    .page-body { max-width: 1200px; margin: 0 auto; padding: 32px 20px 64px; }
+
+    /* ── Section title ── */
+    .provider-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: .78rem; font-weight: 600; letter-spacing: .04em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(128,128,128,.12);
+      margin-bottom: 16px;
+    }
+
+    /* ── Model card ── */
+    .model-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      height: 100%;
+      transition: border-color var(--trans), box-shadow var(--trans);
+      position: relative;
+      overflow: hidden;
+    }
+    .model-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .model-card.recommended::before {
+      content: "Recommended";
+      position: absolute;
+      top: 12px; right: -28px;
+      background: var(--accent);
+      color: #fff;
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      padding: 3px 36px;
+      transform: rotate(40deg);
+    }
+
+    .model-name {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .model-provider-sub {
+      font-size: .78rem;
+      opacity: .55;
+      margin-bottom: 12px;
+    }
+    .model-desc {
+      font-size: .82rem;
+      opacity: .7;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Tags ── */
+    .tag {
+      display: inline-block;
+      font-size: .68rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: .03em;
+    }
+    .tag-free    { background: var(--tag-free-bg);   color: var(--tag-free-c); }
+    .tag-fast    { background: var(--tag-fast-bg);   color: var(--tag-fast-c); }
+    .tag-smart   { background: var(--tag-smart-bg);  color: var(--tag-smart-c); }
+    .tag-vision  { background: var(--tag-vision-bg); color: var(--tag-vision-c); }
+    .tag-reason  { background: var(--tag-reason-bg); color: var(--tag-reason-c); }
+    .tag-cheap   { background: var(--tag-cheap-bg);  color: var(--tag-cheap-c); }
+    .tag-imggen  { background: var(--tag-img-bg);    color: var(--tag-img-c); }
+
+    /* ── Stats row ── */
+    .model-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--card-border);
+    }
+    .stat-item { text-align: center; }
+    .stat-label {
+      display: block;
+      font-size: .65rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      opacity: .5;
+      margin-bottom: 3px;
+    }
+    .stat-value {
+      font-size: .82rem;
+      font-weight: 600;
+    }
+
+    /* ── Speed dots ── */
+    .speed-dots { display: inline-flex; gap: 3px; align-items: center; }
+    .speed-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(128,128,128,.25);
+    }
+    .speed-dot.on { background: #10a37f; }
+
+    /* ── IQ stars ── */
+    .iq-stars { display: inline-flex; gap: 2px; }
+    .iq-star  { font-size: .72rem; color: rgba(128,128,128,.25); }
+    .iq-star.on { color: #f59e0b; }
+
+    /* ── Capability pills ── */
+    .cap-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: .72rem; padding: 2px 7px; border-radius: 20px;
+      border: 1px solid var(--card-border);
+      opacity: .35;
+    }
+    .cap-pill.active { opacity: 1; border-color: var(--accent); color: var(--accent); }
+
+    /* ── Filter bar ── */
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+    .filter-btn {
+      border: 1px solid var(--card-border);
+      background: transparent;
+      color: var(--bs-body-color);
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: .8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--trans);
+    }
+    .filter-btn:hover  { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── Comparison table ── */
+    /* ── Scrollable table wrapper ── */
+    .table-wrap {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      overflow-x: auto;   /* horizontal scroll on small screens */
+      overflow-y: visible;
+    }
+
+    .compare-table {
+      width: 100%;
+      min-width: 960px;          /* force scroll before columns squish */
+      border-collapse: separate; /* required for position:sticky on th */
+      border-spacing: 0;
+      font-size: .82rem;
+    }
+
+    /* Sticky header — box-shadow used instead of border-bottom
+       because border-bottom is invisible on sticky cells when
+       border-collapse:separate is set */
+    .compare-table thead th {
+      background: var(--header-bg);
+      padding: 11px 14px;
+      text-align: left;
+      font-size: .72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      white-space: nowrap;
+      color: var(--bs-body-color);
+      opacity: .65;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: inset 0 -2px 0 var(--card-border); /* visible sticky underline */
+    }
+
+    .compare-table tbody td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--card-border);
+      vertical-align: middle;
+    }
+    .compare-table tbody tr:last-child td { border-bottom: none; }
+    .compare-table tbody tr:hover td     { background: rgba(128,128,128,.04); }
+
+    .check-yes { color: #10a37f; font-size: 1rem; }
+    .check-no  { color: rgba(128,128,128,.3); font-size: 1rem; }
+
+    /* ── Theme toggle ── */
+    .theme-toggle-btn {
+      margin-left: auto;
+      background: none;
+      border: 1px solid var(--card-border);
+      color: var(--bs-body-color);
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: .85rem;
+      transition: background var(--trans);
+    }
+    .theme-toggle-btn:hover { background: rgba(128,128,128,.1); }
+
+    /* ── Reference links ── */
+    .ref-links { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+    .ref-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: .72rem; font-weight: 500;
+      padding: 3px 9px; border-radius: 20px;
+      border: 1px solid var(--card-border);
+      color: var(--bs-body-color);
+      text-decoration: none;
+      transition: border-color var(--trans), color var(--trans), background var(--trans);
+      opacity: .75;
+    }
+    .ref-link:hover { border-color: var(--accent); color: var(--accent); opacity: 1; background: rgba(16,163,127,.06); }
+    .ref-link i { font-size: .65rem; }
+
+    /* ── Accent color for "use model" button ── */
+    .btn-use-model {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: .78rem; font-weight: 500;
+      padding: 5px 12px; border-radius: 8px;
+      background: var(--accent); color: #fff; border: none;
+      text-decoration: none;
+      transition: background var(--trans);
+    }
+    .btn-use-model:hover { background: var(--accent-hover); color: #fff; }
+
+    @media (max-width: 575px) {
+      .page-header { padding: 10px 14px; }
+      .page-body { padding: 20px 12px 48px; }
+      .model-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <div class="page-header">
+    <a href="/" class="back-btn">
+      <i class="fa-solid fa-arrow-left fa-xs"></i> Back to Chat
+    </a>
+    <h1><i class="fa-solid fa-table-columns me-2 opacity-75"></i>Model Comparison</h1>
+    <button class="theme-toggle-btn ms-auto" id="themeToggle" title="Toggle theme">
+      <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </button>
+  </div>
+
+  <div class="page-body">
+
+    <!-- ── Intro ── -->
+    <div class="mb-4">
+      <h2 class="fs-5 fw-semibold mb-1">All Available Models</h2>
+      <p class="text-muted small mb-0">
+        Compare speed, intelligence, features, and pricing across every model available in this app.
+        All <span class="tag tag-free">Free</span> models require no payment — just an API key.
+      </p>
+    </div>
+
+    <!-- ── Filter bar ── -->
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-btn active" data-filter="all">All Models</button>
+      <button class="filter-btn" data-filter="free">Free</button>
+      <button class="filter-btn" data-filter="vision">Vision</button>
+      <button class="filter-btn" data-filter="reasoning">Reasoning</button>
+      <button class="filter-btn" data-filter="image-gen">Image Gen</button>
+      <button class="filter-btn" data-filter="groq">Groq</button>
+      <button class="filter-btn" data-filter="gemini">Gemini</button>
+      <button class="filter-btn" data-filter="deepseek">DeepSeek</button>
+    </div>
+
+    <!-- ── Cards grid ── -->
+    <div class="row g-3 mb-5" id="cardsGrid"></div>
+
+    <!-- ── Detailed comparison table ── -->
+    <h3 class="fs-5 fw-semibold mb-3 mt-2">
+      <i class="fa-solid fa-list-check me-2 opacity-60"></i>Detailed Feature Comparison
+    </h3>
+    <div class="table-wrap mb-5">
+      <table class="compare-table" id="compareTable">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Provider</th>
+            <th>Speed</th>
+            <th>Intelligence</th>
+            <th>Context</th>
+            <th>Vision</th>
+            <th>Reasoning</th>
+            <th>Image Gen</th>
+            <th>Cost</th>
+            <th>Best for</th>
+            <th>References</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- ── Provider key summary ── -->
+    <h3 class="fs-5 fw-semibold mb-3">
+      <i class="fa-solid fa-key me-2 opacity-60"></i>API Key Setup
+    </h3>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="model-card">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <i class="fa-solid fa-bolt text-warning fs-5"></i>
+            <span class="fw-semibold">Groq</span>
+            <span class="tag tag-free ms-auto">Free</span>
+          </div>
+          <p class="text-muted small mb-3">Ultra-fast inference for Llama and Qwen models. Completely free with generous rate limits.</p>
+          <div class="mb-2 small"><code>GROQ_API_KEY=gsk_...</code></div>
+          <a href="https://console.groq.com/keys" target="_blank" class="btn-use-model">
+            Get API Key <i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i>
+          </a>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="model-card">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <i class="fa-brands fa-google text-primary fs-5"></i>
+            <span class="fw-semibold">Google Gemini</span>
+            <span class="tag tag-free ms-auto">Free</span>
+          </div>
+          <p class="text-muted small mb-3">Multimodal models with massive context windows (1M–2M tokens). Free tier via Google AI Studio.</p>
+          <div class="mb-2 small"><code>GEMINI_API_KEY=AIza...</code></div>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="btn-use-model">
+            Get API Key <i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i>
+          </a>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="model-card">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <i class="fa-solid fa-brain text-info fs-5"></i>
+            <span class="fw-semibold">DeepSeek</span>
+            <span class="tag tag-cheap ms-auto">Cheap</span>
+          </div>
+          <p class="text-muted small mb-3">State-of-the-art reasoning and coding models at extremely low cost. Near-OpenAI quality for cents.</p>
+          <div class="mb-2 small"><code>DEEPSEEK_API_KEY=sk-...</code></div>
+          <a href="https://platform.deepseek.com/api_keys" target="_blank" class="btn-use-model">
+            Get API Key <i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-body -->
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+  // ── Theme ──
+  const savedTheme = localStorage.getItem("cgptclone_v2_theme") || "dark";
+  document.documentElement.setAttribute("data-bs-theme", savedTheme);
+  const themeIcon = document.getElementById("themeIcon");
+  themeIcon.className = savedTheme === "dark" ? "fa-solid fa-moon" : "fa-solid fa-sun";
+  document.getElementById("themeToggle").addEventListener("click", () => {
+    const cur  = document.documentElement.getAttribute("data-bs-theme");
+    const next = cur === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-bs-theme", next);
+    themeIcon.className = next === "dark" ? "fa-solid fa-moon" : "fa-solid fa-sun";
+    localStorage.setItem("cgptclone_v2_theme", next);
+  });
+
+  // ── Model data ──
+  const MODELS = [
+    // Groq
+    {
+      id: "groq:llama-3.1-8b-instant",
+      name: "Llama 3.1 8B Instant",
+      provider: "Groq",
+      providerIcon: '<i class="fa-solid fa-bolt text-warning"></i>',
+      desc: "Meta's smallest Llama model served on Groq's ultra-fast LPU chips. Perfect for quick Q&A and chat where latency matters most.",
+      tags: ["free","fast"],
+      speed: 5, iq: 2, context: "128K",
+      vision: false, reasoning: false, imageGen: false,
+      cost: "Free", costTag: "tag-free",
+      bestFor: "Quick chat, drafts",
+      recommended: false,
+      filter: ["all","free","groq"],
+      links: [
+        { label: "Model Card",   icon: "fa-solid fa-id-card",    url: "https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct" },
+        { label: "Groq Docs",   icon: "fa-solid fa-book-open",  url: "https://console.groq.com/docs/models" },
+        { label: "Meta AI",     icon: "fa-solid fa-globe",      url: "https://ai.meta.com/blog/meta-llama-3-1/" },
+      ],
+    },
+    {
+      id: "groq:llama-3.3-70b-versatile",
+      name: "Llama 3.3 70B Versatile",
+      provider: "Groq",
+      providerIcon: '<i class="fa-solid fa-bolt text-warning"></i>',
+      desc: "Meta's flagship 70B model — best balance of quality and speed on Groq. Great for complex tasks, coding, and long documents.",
+      tags: ["free","smart"],
+      speed: 3, iq: 4, context: "128K",
+      vision: false, reasoning: false, imageGen: false,
+      cost: "Free", costTag: "tag-free",
+      bestFor: "Coding, analysis",
+      recommended: true,
+      filter: ["all","free","groq"],
+      links: [
+        { label: "Model Card",   icon: "fa-solid fa-id-card",    url: "https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct" },
+        { label: "Groq Docs",   icon: "fa-solid fa-book-open",  url: "https://console.groq.com/docs/models" },
+        { label: "Meta AI",     icon: "fa-solid fa-globe",      url: "https://ai.meta.com/blog/meta-llama-3-3/" },
+      ],
+    },
+    {
+      id: "groq:meta-llama/llama-4-scout-17b-16e-instruct",
+      name: "Llama 4 Scout 17B",
+      provider: "Groq",
+      providerIcon: '<i class="fa-solid fa-bolt text-warning"></i>',
+      desc: "Meta's latest multimodal model with 16 experts MoE architecture. Supports image inputs and very long contexts at high speed.",
+      tags: ["free","smart","vision"],
+      speed: 4, iq: 4, context: "128K",
+      vision: true, reasoning: false, imageGen: false,
+      cost: "Free", costTag: "tag-free",
+      bestFor: "Vision + long docs",
+      recommended: false,
+      filter: ["all","free","groq","vision"],
+      links: [
+        { label: "Model Card",   icon: "fa-solid fa-id-card",    url: "https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct" },
+        { label: "Groq Docs",   icon: "fa-solid fa-book-open",  url: "https://console.groq.com/docs/models" },
+        { label: "Meta Llama 4",icon: "fa-solid fa-globe",      url: "https://ai.meta.com/blog/llama-4-multimodal-intelligence/" },
+      ],
+    },
+    {
+      id: "groq:qwen/qwen3-32b",
+      name: "Qwen 3 32B",
+      provider: "Groq",
+      providerIcon: '<i class="fa-solid fa-bolt text-warning"></i>',
+      desc: "Alibaba's powerful 32B model with deep reasoning and excellent coding ability. Supports step-by-step chain-of-thought.",
+      tags: ["free","reasoning"],
+      speed: 3, iq: 4, context: "32K",
+      vision: false, reasoning: true, imageGen: false,
+      cost: "Free", costTag: "tag-free",
+      bestFor: "Reasoning, math, code",
+      recommended: false,
+      filter: ["all","free","groq","reasoning"],
+      links: [
+        { label: "Model Card",   icon: "fa-solid fa-id-card",    url: "https://huggingface.co/Qwen/Qwen3-32B" },
+        { label: "Groq Docs",   icon: "fa-solid fa-book-open",  url: "https://console.groq.com/docs/models" },
+        { label: "Qwen Blog",   icon: "fa-solid fa-globe",      url: "https://qwenlm.github.io/blog/qwen3/" },
+      ],
+    },
+    {
+      id: "groq:openai/gpt-oss-120b",
+      name: "GPT-OSS 120B",
+      provider: "Groq",
+      providerIcon: '<i class="fa-solid fa-bolt text-warning"></i>',
+      desc: "OpenAI's open-weight 120B model hosted on Groq. The most powerful text model available for free on Groq — near GPT-4 level quality.",
+      tags: ["free","smart"],
+      speed: 2, iq: 5, context: "128K",
+      vision: false, reasoning: false, imageGen: false,
+      cost: "Free", costTag: "tag-free",
+      bestFor: "Complex tasks, long context",
+      recommended: false,
+      filter: ["all","free","groq"],
+      links: [
+        { label: "Groq Docs",   icon: "fa-solid fa-book-open",  url: "https://console.groq.com/docs/models" },
+        { label: "OpenAI",      icon: "fa-solid fa-globe",      url: "https://openai.com/" },
+      ],
+    },
+    // Gemini
+    {
+      id: "gemini:gemini-2.5-flash-lite",
+      name: "Gemini 2.5 Flash Lite",
+      provider: "Google Gemini",
+      providerIcon: '<i class="fa-brands fa-google text-primary"></i>',
+      desc: "Google's lightest Gemini model — fastest and lowest latency with multimodal support. 1M token context. 15 requests/min on free tier.",
+      tags: ["free","fast","vision"],
+      speed: 5, iq: 3, context: "1M",
+      vision: true, reasoning: false, imageGen: false,
+      cost: "Free (15 RPM)", costTag: "tag-free",
+      bestFor: "Fast vision tasks",
+      recommended: false,
+      filter: ["all","free","gemini","vision"],
+      links: [
+        { label: "Google AI Docs", icon: "fa-solid fa-book-open", url: "https://ai.google.dev/gemini-api/docs/models/gemini" },
+        { label: "AI Studio",      icon: "fa-solid fa-flask",     url: "https://aistudio.google.com/" },
+        { label: "Rate Limits",    icon: "fa-solid fa-gauge",     url: "https://ai.google.dev/gemini-api/docs/rate-limits" },
+      ],
+    },
+    {
+      id: "gemini:gemini-2.5-flash",
+      name: "Gemini 2.5 Flash",
+      provider: "Google Gemini",
+      providerIcon: '<i class="fa-brands fa-google text-primary"></i>',
+      desc: "The sweet spot in Google's 2.5 family — excellent quality with vision and reasoning. 1M token context. 10 requests/min free.",
+      tags: ["free","smart","vision"],
+      speed: 4, iq: 4, context: "1M",
+      vision: true, reasoning: true, imageGen: false,
+      cost: "Free (10 RPM)", costTag: "tag-free",
+      bestFor: "Documents, images, chat",
+      recommended: true,
+      filter: ["all","free","gemini","vision","reasoning"],
+      links: [
+        { label: "Google AI Docs", icon: "fa-solid fa-book-open", url: "https://ai.google.dev/gemini-api/docs/models/gemini" },
+        { label: "AI Studio",      icon: "fa-solid fa-flask",     url: "https://aistudio.google.com/" },
+        { label: "Rate Limits",    icon: "fa-solid fa-gauge",     url: "https://ai.google.dev/gemini-api/docs/rate-limits" },
+      ],
+    },
+    {
+      id: "gemini:gemini-2.5-pro",
+      name: "Gemini 2.5 Pro",
+      provider: "Google Gemini",
+      providerIcon: '<i class="fa-brands fa-google text-primary"></i>',
+      desc: "Google's most capable model with 2M token context — best for research, large codebases, and complex multimodal tasks. 5 RPM free.",
+      tags: ["free","smart","vision"],
+      speed: 2, iq: 5, context: "2M",
+      vision: true, reasoning: true, imageGen: false,
+      cost: "Free (5 RPM)", costTag: "tag-free",
+      bestFor: "Research, huge context",
+      recommended: false,
+      filter: ["all","free","gemini","vision","reasoning"],
+      links: [
+        { label: "Google AI Docs", icon: "fa-solid fa-book-open", url: "https://ai.google.dev/gemini-api/docs/models/gemini" },
+        { label: "AI Studio",      icon: "fa-solid fa-flask",     url: "https://aistudio.google.com/" },
+        { label: "Rate Limits",    icon: "fa-solid fa-gauge",     url: "https://ai.google.dev/gemini-api/docs/rate-limits" },
+      ],
+    },
+    // DeepSeek
+    {
+      id: "deepseek:deepseek-chat",
+      name: "DeepSeek V3",
+      provider: "DeepSeek",
+      providerIcon: '<i class="fa-solid fa-brain text-info"></i>',
+      desc: "DeepSeek's top chat model — near GPT-4 quality at a fraction of the price. Excellent at coding, maths, and instruction following.",
+      tags: ["smart","cheap"],
+      speed: 3, iq: 4, context: "64K",
+      vision: false, reasoning: false, imageGen: false,
+      cost: "$0.27 / 1M", costTag: "tag-cheap",
+      bestFor: "Coding, data, analysis",
+      recommended: false,
+      filter: ["all","deepseek"],
+      links: [
+        { label: "API Docs",     icon: "fa-solid fa-book-open",  url: "https://api-docs.deepseek.com/" },
+        { label: "Model Card",   icon: "fa-solid fa-id-card",    url: "https://huggingface.co/deepseek-ai/DeepSeek-V3" },
+        { label: "DeepSeek",     icon: "fa-solid fa-globe",      url: "https://www.deepseek.com/" },
+      ],
+    },
+    {
+      id: "deepseek:deepseek-reasoner",
+      name: "DeepSeek R1",
+      provider: "DeepSeek",
+      providerIcon: '<i class="fa-solid fa-brain text-info"></i>',
+      desc: "DeepSeek's chain-of-thought reasoning model trained to think step-by-step. Top performer on math and science benchmarks at low cost.",
+      tags: ["reasoning","smart","cheap"],
+      speed: 2, iq: 5, context: "64K",
+      vision: false, reasoning: true, imageGen: false,
+      cost: "$0.55 / 1M", costTag: "tag-cheap",
+      bestFor: "Math, science, logic",
+      recommended: false,
+      filter: ["all","deepseek","reasoning"],
+      links: [
+        { label: "API Docs",     icon: "fa-solid fa-book-open",  url: "https://api-docs.deepseek.com/" },
+        { label: "Model Card",   icon: "fa-solid fa-id-card",    url: "https://huggingface.co/deepseek-ai/DeepSeek-R1" },
+        { label: "Paper",        icon: "fa-solid fa-file-lines",url: "https://arxiv.org/abs/2501.12948" },
+      ],
+    },
+    // Image gen
+    {
+      id: "image-gen:gemini-2.5-flash-image-preview",
+      name: "Gemini Image",
+      provider: "Puter.js (client-side)",
+      providerIcon: '<i class="fa-solid fa-wand-magic-sparkles text-success"></i>',
+      desc: "Google Gemini image generation model served client-side via Puter.js — completely free, no API key needed, runs in your browser.",
+      tags: ["free","image-gen"],
+      speed: 3, iq: 4, context: "N/A",
+      vision: false, reasoning: false, imageGen: true,
+      cost: "Free", costTag: "tag-free",
+      bestFor: "AI image creation",
+      recommended: false,
+      filter: ["all","free","image-gen"],
+      links: [
+        { label: "Gemini Image Docs", icon: "fa-solid fa-book-open", url: "https://ai.google.dev/gemini-api/docs/image-generation" },
+        { label: "Puter.js Docs",     icon: "fa-solid fa-code",      url: "https://docs.puter.com/AI/txt2img/" },
+        { label: "Puter.js",          icon: "fa-solid fa-globe",      url: "https://puter.com/" },
+      ],
+    },
+  ];
+
+  // ── Helpers ──
+  function speedDots(n) {
+    return Array.from({length:5}, (_,i) =>
+      `<span class="speed-dot ${i<n?"on":""}"></span>`
+    ).join("");
+  }
+  function iqStars(n) {
+    return Array.from({length:5}, (_,i) =>
+      `<i class="iq-star fa-solid fa-star ${i<n?"on":""}"></i>`
+    ).join("");
+  }
+  function tagHtml(tags) {
+    const map = {
+      free:       ['tag-free',   'Free'],
+      fast:       ['tag-fast',   'Fast'],
+      smart:      ['tag-smart',  'Smart'],
+      vision:     ['tag-vision', 'Vision'],
+      reasoning:  ['tag-reason', 'Reasoning'],
+      cheap:      ['tag-cheap',  'Cheap'],
+      'image-gen':['tag-imggen', 'Image Gen'],
+    };
+    return tags.map(t => map[t] ? `<span class="tag ${map[t][0]}">${map[t][1]}</span>` : "").join(" ");
+  }
+  function checkYN(v) {
+    return v
+      ? '<i class="fa-solid fa-circle-check check-yes"></i>'
+      : '<i class="fa-solid fa-circle-xmark check-no"></i>';
+  }
+
+  function linksHtml(links) {
+    return links.map(l =>
+      `<a class="ref-link" href="${l.url}" target="_blank" rel="noopener" title="${l.label}">
+         <i class="${l.icon}"></i>${l.label}
+       </a>`
+    ).join("");
+  }
+  function linksInline(links) {
+    return links.map(l =>
+      `<a href="${l.url}" target="_blank" rel="noopener"
+          style="display:inline-flex;align-items:center;gap:4px;font-size:.72rem;color:var(--bs-body-color);opacity:.65;text-decoration:none;margin-right:6px"
+          title="${l.label}"
+          onmouseover="this.style.opacity=1;this.style.color='#10a37f'"
+          onmouseout="this.style.opacity=.65;this.style.color=''">
+         <i class="${l.icon} fa-xs"></i>${l.label}
+       </a>`
+    ).join("");
+  }
+
+  // ── Render cards ──
+  function renderCards(filter) {
+    const grid = document.getElementById("cardsGrid");
+    const list = filter === "all" ? MODELS : MODELS.filter(m => m.filter.includes(filter));
+    grid.innerHTML = "";
+    list.forEach(m => {
+      const col = document.createElement("div");
+      col.className = "col-sm-6 col-lg-4";
+      col.innerHTML = `
+        <div class="model-card ${m.recommended?"recommended":""}">
+          <div class="model-name">${m.name}</div>
+          <div class="model-provider-sub">${m.providerIcon} &nbsp;${m.provider}</div>
+          <p class="model-desc">${m.desc}</p>
+          <div class="d-flex flex-wrap gap-1 mb-3">${tagHtml(m.tags)}</div>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="cap-pill ${m.vision?"active":""}"><i class="fa-solid fa-eye fa-xs"></i> Vision</span>
+            <span class="cap-pill ${m.reasoning?"active":""}"><i class="fa-solid fa-brain fa-xs"></i> Reasoning</span>
+            <span class="cap-pill ${m.imageGen?"active":""}"><i class="fa-solid fa-image fa-xs"></i> Image Gen</span>
+          </div>
+          <div class="model-stats">
+            <div class="stat-item">
+              <span class="stat-label">Speed</span>
+              <div class="speed-dots">${speedDots(m.speed)}</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Intelligence</span>
+              <div class="iq-stars">${iqStars(m.iq)}</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Context</span>
+              <span class="stat-value">${m.context}</span>
+            </div>
+          </div>
+          <!-- Reference links -->
+          <div class="ref-links">${linksHtml(m.links)}</div>
+          <div class="mt-3 d-flex align-items-center justify-content-between">
+            <span class="tag ${m.costTag}">${m.cost}</span>
+            <a href="/" class="btn-use-model"><i class="fa-solid fa-arrow-right fa-xs"></i> Use in chat</a>
+          </div>
+        </div>`;
+      grid.appendChild(col);
+    });
+    if (!list.length) {
+      grid.innerHTML = `<div class="col-12 text-center text-muted py-5 small">No models match this filter.</div>`;
+    }
+  }
+
+  // ── Render table ──
+  function renderTable() {
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = MODELS.map(m => `
+      <tr>
+        <td>
+          <div class="fw-semibold" style="font-size:.88rem">${m.name}</div>
+          <div style="font-size:.72rem;opacity:.5">${m.id}</div>
+        </td>
+        <td>${m.providerIcon} ${m.provider}</td>
+        <td><div class="speed-dots">${speedDots(m.speed)}</div></td>
+        <td><div class="iq-stars">${iqStars(m.iq)}</div></td>
+        <td><span class="fw-semibold">${m.context}</span></td>
+        <td>${checkYN(m.vision)}</td>
+        <td>${checkYN(m.reasoning)}</td>
+        <td>${checkYN(m.imageGen)}</td>
+        <td><span class="tag ${m.costTag}" style="white-space:nowrap">${m.cost}</span></td>
+        <td style="font-size:.78rem;opacity:.75">${m.bestFor}</td>
+        <td style="white-space:nowrap">${linksInline(m.links)}</td>
+      </tr>`).join("");
+  }
+
+  // ── Filter bar ──
+  document.getElementById("filterBar").addEventListener("click", e => {
+    const btn = e.target.closest(".filter-btn");
+    if (!btn) return;
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    renderCards(btn.dataset.filter);
+  });
+
+  renderCards("all");
+  renderTable();
+  </script>
+</body>
+</html>
