@@ -21,7 +21,7 @@ Main chat UI with streaming responses, message controls, and clean layout.
 ---
 
 ### 🖼️ Chat with Image Description
-![Chat with Image](screenshots/Chat%20with%20image%20description%20.png.png)
+![Chat with Image](screenshots/Chat%20with%20image%20description%20.png)
 
 Example of using image input and receiving AI-generated descriptions.
 
